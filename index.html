@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy Tour | Explore Gunung Sari</title>
+    <link rel="icon" type="image/png" href="favicon.ico">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .bg-hero {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        .foto-galeri-aktif {
+            border-color: #10b981; 
+            opacity: 1;
+        }
+        /* Menyembunyikan scrollbar bawaan browser biar estetik saat digeser di HP */
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 relative">
+
+    <nav class="bg-white/90 backdrop-blur-md shadow-sm fixed w-full z-40 top-0">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="text-2xl font-extrabold tracking-tight text-emerald-600">
+                Happy<span class="text-slate-800">Tour</span>
+            </div>
+            <a href="#paket" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-full font-semibold transition shadow-md">Booking Guide</a>
+        </div>
+    </nav>
+
+    <header class="bg-hero h-[70vh] flex items-center justify-center text-center px-4 mt-14">
+        <div>
+            <span id="hero-subtitle" class="text-emerald-400 font-bold tracking-widest uppercase text-sm mb-2 block">Loading...</span>
+            <h1 id="hero-title" class="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-4">Loading...</h1>
+            <p id="hero-desc" class="text-lg text-slate-200 mb-8 max-w-2xl mx-auto">Tunggu sebentar ya, sedang mengambil data...</p>
+        </div>
+    </header>
+
+    <section id="wisata" class="py-16 max-w-6xl mx-auto px-4 overflow-hidden">
+        <div class="text-center mb-12">
+            <h2 id="wisata-title" class="text-3xl font-extrabold text-slate-800">Loading...</h2>
+            <p id="wisata-subtitle" class="text-slate-500 mt-2">Loading...</p>
+        </div>
+        <div id="wadah-wisata" class="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scroll px-4 -mx-4 md:px-0 md:mx-0"></div>
+    </section>
+
+    <section id="galeri" class="py-16 bg-slate-200/50 border-t border-slate-200 overflow-hidden">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 id="galeri-title" class="text-3xl font-extrabold text-slate-800">Loading...</h2>
+                <p id="galeri-subtitle" class="text-slate-500 mt-2">Loading...</p>
+            </div>
+            <div id="wadah-galeri" class="flex md:grid md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-x-auto pb-8 snap-x snap-mandatory hide-scroll px-4 -mx-4 md:px-0 md:mx-0"></div>
+        </div>
+    </section>
+
+    <section id="paket" class="py-20 max-w-6xl mx-auto px-4 overflow-hidden">
+        <div class="text-center mb-12">
+            <h2 id="paket-title" class="text-3xl font-extrabold text-slate-800">Loading...</h2>
+            <p class="text-slate-500 mt-2">Sewa jasa pemandu lokal kami untuk pengalaman liburan yang aman dan berkesan.</p>
+            <p id="paket-disclaimer" class="text-sm font-semibold text-rose-500 mt-2 bg-rose-50 inline-block px-4 py-2 rounded-lg border border-rose-100">
+                Loading...
+            </p>
+        </div>
+        <div id="wadah-paket" class="flex md:grid md:grid-cols-2 gap-6 max-w-4xl mx-auto overflow-x-auto pb-8 snap-x snap-mandatory hide-scroll px-4 -mx-4 md:px-0 md:mx-0"></div>
+    </section>
+
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t-4 border-emerald-500">
+        <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+            <div class="md:pr-8">
+                <div class="text-2xl font-extrabold tracking-tight text-emerald-500 mb-4">
+                    Happy<span class="text-white">Tour</span>
+                </div>
+                <p id="footer-about" class="text-sm leading-relaxed mb-4">Loading...</p>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-4 uppercase tracking-wider text-sm">Navigasi</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#wisata" class="hover:text-emerald-400 transition">Spot Favorit</a></li>
+                    <li><a href="#galeri" class="hover:text-emerald-400 transition">Galeri Kenangan</a></li>
+                    <li><a href="#paket" class="hover:text-emerald-400 transition">Harga Jasa Guide</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-4 uppercase tracking-wider text-sm">Kontak Kami</h4>
+                <ul class="space-y-3 text-sm">
+                    <li id="kontak-email" class="flex items-start gap-2">📧 Loading...</li>
+                    <li id="kontak-wa" class="flex items-start gap-2">📱 Loading...</li>
+                    <li id="kontak-alamat" class="flex items-start gap-2">📍 Loading...</li>
+                </ul>
+            </div>
+        </div>
+        <div class="max-w-6xl mx-auto px-4 mt-12 pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 text-xs">
+            <p>&copy; 2026 Pojok Universe. Hak Cipta Dilindungi.</p>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-white transition">Kebijakan Privasi</a>
+                <a href="#" class="hover:text-white transition">Syarat & Ketentuan</a>
+            </div>
+        </div>
+    </footer>
+
+    <div id="modal-detail" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto relative shadow-2xl">
+            <button onclick="tutupModal()" class="absolute top-4 right-4 bg-slate-100/80 hover:bg-red-500 hover:text-white text-slate-600 rounded-full w-8 h-8 flex items-center justify-center font-bold transition z-10">✕</button>
+            <div id="konten-modal"></div>
+        </div>
+    </div>
+
+    <script>
+        let nomorWhatsAppAdmin = ""; 
+
+        function bookingWA(namaPaket) {
+            if (!nomorWhatsAppAdmin) {
+                alert("Nomor WhatsApp admin belum dimuat, tunggu sebentar ya!");
+                return;
+            }
+            let nomorBeres = nomorWhatsAppAdmin.replace(/\D/g, '');
+            if (nomorBeres.startsWith('0')) {
+                nomorBeres = '62' + nomorBeres.substring(1);
+            }
+            const pesan = `Halo Admin Happy Tour, saya tertarik dan ingin booking jasa guide untuk *${namaPaket}*. Boleh minta info detailnya?`;
+            const linkWA = `https://api.whatsapp.com/send?phone=${nomorBeres}&text=${encodeURIComponent(pesan)}`;
+            window.open(linkWA, '_blank');
+        }
+
+        const supabaseUrl = 'https://wgdopbdxjrjypcrenjpb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnZG9wYmR4anJqeXBjcmVuanBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMDEzMzYsImV4cCI6MjEwMzY3NzMzNn0.tjogPydKMyvd7JtzC3K95IIsu2FZeg9zk0RZlV5cBy0';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+        let dataKatalog = []; 
+
+        async function fetchSemuaData() {
+            try {
+                const { data: peng } = await supabaseClient.from('pengaturan_web').select('*').eq('id', 1).single();
+                if (peng) {
+                    if(peng.hero_bg_url) {
+                        document.querySelector('header.bg-hero').style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('${peng.hero_bg_url}')`;
+                    }
+                    document.getElementById('hero-subtitle').innerText = peng.hero_subtitle || 'Pojok Universe Present';
+                    let titleAsli = peng.hero_title || 'Eksplorasi Gunung Sari';
+                    document.getElementById('hero-title').innerHTML = titleAsli.includes('Tanpa Nyasar!') 
+                        ? titleAsli.replace('Tanpa Nyasar!', '<br><span class="text-emerald-400">Tanpa Nyasar!</span>')
+                        : titleAsli;
+                    document.getElementById('hero-desc').innerText = peng.hero_desc || 'Deskripsi belum diatur oleh Admin.';
+                    document.getElementById('wisata-title').innerText = peng.wisata_title || 'Spot Favorit';
+                    document.getElementById('wisata-subtitle').innerText = peng.wisata_subtitle || 'Belum ada deskripsi.';
+                    document.getElementById('galeri-title').innerText = peng.galeri_title || 'Galeri Kenangan';
+                    document.getElementById('galeri-subtitle').innerText = peng.galeri_subtitle || 'Belum ada deskripsi.';
+                    document.getElementById('paket-title').innerText = peng.paket_title || 'Pilihan Paket Guide';
+                    document.getElementById('paket-disclaimer').innerText = peng.paket_disclaimer || '⚠️ Harga belum termasuk akomodasi.';
+                    document.getElementById('footer-about').innerText = peng.footer_about || 'Deskripsi singkat perusahaan.';
+                    document.getElementById('kontak-email').innerHTML = '📧 ' + (peng.kontak_email || '-');
+                    document.getElementById('kontak-alamat').innerHTML = '📍 ' + (peng.kontak_alamat || '-');
+                    if (peng.kontak_wa) {
+                        nomorWhatsAppAdmin = peng.kontak_wa;
+                        document.getElementById('kontak-wa').innerHTML = '📱 ' + peng.kontak_wa;
+                    } else {
+                        document.getElementById('kontak-wa').innerHTML = '📱 -';
+                    }
+                }
+
+                const { data: kat } = await supabaseClient.from('katalog_konten').select('*').order('created_at', { ascending: true });
+                if (kat && kat.length > 0) {
+                    dataKatalog = kat;
+                    renderKatalog(kat);
+                } else {
+                    document.getElementById('wadah-wisata').innerHTML = '<p class="w-full text-center text-slate-500 py-10">Belum ada data wisata.</p>';
+                    document.getElementById('wadah-galeri').innerHTML = '<p class="w-full text-center text-slate-500 py-10">Belum ada data galeri.</p>';
+                }
+
+                const { data: pak } = await supabaseClient.from('paket_guide').select('*').order('harga', { ascending: true });
+                if (pak && pak.length > 0) {
+                    renderPaket(pak);
+                } else {
+                    document.getElementById('wadah-paket').innerHTML = '<p class="w-full text-center text-slate-500 py-10">Belum ada data harga paket.</p>';
+                }
+
+            } catch (error) {
+                console.error("Gagal menarik data utama:", error);
+            }
+        }
+
+        function renderKatalog(data) {
+            const wadahWisata = document.getElementById('wadah-wisata');
+            const wadahGaleri = document.getElementById('wadah-galeri');
+            wadahWisata.innerHTML = ''; wadahGaleri.innerHTML = '';
+
+            data.forEach((item, index) => {
+                if (!item.fotos || item.fotos.length === 0) return; 
+
+                const isVideo = item.fotos[0].match(/\.(mp4|webm|ogg)$/i);
+                const mediaThumbnail = isVideo 
+                    ? `<video src="${item.fotos[0]}" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500" muted loop playsinline></video>`
+                    : `<img src="${item.fotos[0]}" alt="${item.nama}" class="w-full h-64 object-cover group-hover:scale-110 transition duration-500">`;
+
+                const cardHTML = `
+                    <div onclick="bukaModal(${index})" class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-xl transition cursor-pointer group relative shrink-0 min-w-[85%] md:min-w-0 snap-center">
+                        <div class="overflow-hidden">${mediaThumbnail}</div>
+                        <div class="absolute bottom-0 w-full bg-gradient-to-t from-black/80 to-transparent p-6 pt-12 z-10 pointer-events-none">
+                            <h3 class="text-2xl font-bold text-white shadow-sm">${item.nama}</h3>
+                            <p class="text-emerald-400 text-sm font-semibold mt-1">${item.tipe === 'wisata' ? 'Ketuk untuk detail & galeri ➔' : 'Tonton keseruannya ➔'}</p>
+                        </div>
+                    </div>
+                `;
+
+                if (item.tipe === "wisata") wadahWisata.innerHTML += cardHTML;
+                else if (item.tipe === "galeri") wadahGaleri.innerHTML += cardHTML;
+            });
+        }
+
+        function renderPaket(data) {
+            const wadahPaket = document.getElementById('wadah-paket');
+            wadahPaket.innerHTML = '';
+
+            data.forEach(item => {
+                const isPremium = (item.warna_kartu === 'hijau');
+                const bgKartu = isPremium ? 'bg-emerald-600 text-white shadow-xl transform md:-translate-y-4' : 'bg-white shadow-sm border border-slate-100 text-slate-800 hover:shadow-lg';
+                const badge = item.badge_promo ? `<div class="absolute top-0 right-0 bg-emerald-400 text-emerald-900 text-xs font-bold px-4 py-2 rounded-bl-2xl rounded-tr-3xl">${item.badge_promo}</div>` : '';
+                const textDesc = isPremium ? 'text-emerald-100' : 'text-slate-500';
+                const textColorHarga = isPremium ? '' : 'text-emerald-600';
+                const textColorSatuan = isPremium ? 'text-emerald-200' : 'text-slate-400';
+                const listColor = isPremium ? 'text-emerald-50' : 'text-slate-600';
+                const btnStyle = isPremium ? 'bg-white text-emerald-600 hover:bg-slate-100 shadow-md' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-500 hover:text-white';
+                
+                const formatHarga = new Intl.NumberFormat('id-ID').format(item.harga);
+
+                let htmlFasilitas = '';
+                if(item.fasilitas) {
+                    item.fasilitas.forEach(fas => {
+                        const icon = isPremium ? '⭐' : '✅';
+                        htmlFasilitas += `<li class="flex items-start gap-2"><span class="mt-0.5">${icon}</span> <span>${fas}</span></li>`;
+                    });
+                }
+
+                wadahPaket.innerHTML += `
+                    <div class="${bgKartu} p-8 md:p-10 rounded-3xl relative flex flex-col justify-between transition shrink-0 min-w-[90%] md:min-w-0 snap-center">
+                        ${badge}
+                        <div>
+                            <h3 class="text-2xl font-bold">${item.nama_paket}</h3>
+                            <p class="${textDesc} mt-2 text-sm">${item.deskripsi || ''}</p>
+                            <div class="my-6 ${textColorHarga} font-extrabold text-4xl">Rp ${formatHarga}<span class="text-lg ${textColorSatuan} font-normal">${item.satuan_harga || ''}</span></div>
+                            <ul class="space-y-3 ${listColor} text-sm mb-8">${htmlFasilitas}</ul>
+                        </div>
+                        <button onclick="bookingWA('${item.nama_paket}')" class="w-full ${btnStyle} font-bold py-3.5 rounded-xl transition">Booking Sekarang</button>
+                    </div>
+                `;
+            });
+        }
+
+        const modal = document.getElementById('modal-detail');
+        const kontenModal = document.getElementById('konten-modal');
+
+        function bukaModal(index) {
+            const data = dataKatalog[index];
+            if(!data) return;
+            
+            let htmlGaleri = '';
+            data.fotos.forEach((mediaUrl, fotoIndex) => {
+                const styleAktif = (fotoIndex === 0) ? 'foto-galeri-aktif' : '';
+                const isVideo = mediaUrl.match(/\.(mp4|webm|ogg)$/i);
+                const tipeMedia = isVideo ? 'video' : 'img';
+                
+                if (isVideo) {
+                    htmlGaleri += `<video src="${mediaUrl}" onclick="gantiMedia(this, '${tipeMedia}')" class="w-20 h-16 object-cover rounded-lg border-2 border-transparent cursor-pointer opacity-70 hover:opacity-100 hover:border-emerald-300 transition duration-300 ${styleAktif} js-thumbnail" muted playsinline></video>`;
+                } else {
+                    htmlGaleri += `<img src="${mediaUrl}" onclick="gantiMedia(this, '${tipeMedia}')" class="w-20 h-16 object-cover rounded-lg border-2 border-transparent cursor-pointer opacity-70 hover:opacity-100 hover:border-emerald-300 transition duration-300 ${styleAktif} js-thumbnail">`;
+                }
+            });
+
+            const isFirstVideo = data.fotos[0].match(/\.(mp4|webm|ogg)$/i);
+            const mainMediaHtml = isFirstVideo
+                ? `<video id="main-media-modal" src="${data.fotos[0]}" class="w-full h-64 md:h-80 object-cover rounded-2xl shadow-md transition duration-300" controls autoplay playsinline></video>`
+                : `<img id="main-media-modal" src="${data.fotos[0]}" class="w-full h-64 md:h-80 object-cover rounded-2xl shadow-md transition duration-300">`;
+
+            if (data.tipe === "galeri") {
+                kontenModal.innerHTML = `
+                    <div class="p-6 md:p-8">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 pb-4 text-center">${data.nama}</h2>
+                        <div id="wadah-main-media">${mainMediaHtml}</div>
+                        <div class="flex gap-2.5 mt-5 overflow-x-auto justify-center pb-1 hide-scroll">
+                            ${htmlGaleri}
+                        </div>
+                    </div>
+                `;
+            } else {
+                kontenModal.innerHTML = `
+                    <div class="p-6 md:p-8 border-b border-slate-100">
+                        <div id="wadah-main-media">${mainMediaHtml}</div>
+                        <div class="flex gap-2.5 mt-5 overflow-x-auto pb-1 hide-scroll">
+                            ${htmlGaleri}
+                        </div>
+                    </div>
+                    <div class="p-6 md:p-8 md:pt-6 space-y-6">
+                        <h2 class="text-2xl md:text-3xl font-bold text-slate-800 pb-2">${data.nama}</h2>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">📍 Informasi Umum & Lokasi</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-slate-600 text-sm">
+                                <li><strong class="text-slate-700">Lokasi:</strong> ${data.info_lokasi || '-'}</li>
+                                <li><strong class="text-slate-700">Ketinggian:</strong> ${data.info_ketinggian || '-'}</li>
+                                <li><strong class="text-slate-700">Jam Buka:</strong> ${data.info_jam_buka || '-'}</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">🥾 Jalur Trekking & Rute</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-slate-600 text-sm">
+                                <li><strong class="text-slate-700">Jarak Tempuh:</strong> ${data.jalur_jarak || '-'}</li>
+                                <li><strong class="text-slate-700">Kondisi Medan:</strong> ${data.jalur_medan || '-'}</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-800 mb-2 flex items-center gap-2">💡 Tips Berkunjung</h3>
+                            <ul class="list-disc pl-5 space-y-2 text-slate-600 text-sm">
+                                <li><strong class="text-slate-700">Waktu Terbaik:</strong> ${data.tips_waktu || '-'}</li>
+                                <li><strong class="text-slate-700">Perlengkapan:</strong> ${data.tips_perlengkapan || '-'}</li>
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function gantiMedia(thumbnail, type) {
+            const wadahMainMedia = document.getElementById('wadah-main-media');
+            const url = thumbnail.src;
+            const styleClass = "w-full h-64 md:h-80 object-cover rounded-2xl shadow-md transition duration-300";
+            
+            if (type === 'video') {
+                wadahMainMedia.innerHTML = `<video id="main-media-modal" src="${url}" class="${styleClass}" controls autoplay playsinline></video>`;
+            } else {
+                wadahMainMedia.innerHTML = `<img id="main-media-modal" src="${url}" class="${styleClass}">`;
+            }
+            
+            const semuaThumbnail = document.querySelectorAll('.js-thumbnail');
+            semuaThumbnail.forEach(t => t.classList.remove('foto-galeri-aktif'));
+            thumbnail.classList.add('foto-galeri-aktif');
+        }
+
+        function tutupModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto'; 
+            kontenModal.innerHTML = '';
+        }
+
+        modal.addEventListener('click', function(e) {
+            if(e.target === modal) {
+                tutupModal();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', fetchSemuaData);
+    </script>
+</body>
+</html>

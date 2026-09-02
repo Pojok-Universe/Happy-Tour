@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | Happy Tour</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- SISTEM KEAMANAN LOGIN ADMIN -->
+    <script>
+        const USER_ADMIN = "agunverse"; 
+        const PASS_ADMIN = "HappyTour2026";
+
+        // Cek apakah admin sudah login sebelumnya di browser ini
+        if (sessionStorage.getItem("admin_logged_in") !== "true") {
+            let inputUser = prompt("🔒 Masukkan USERNAME untuk masuk ke Dashboard Happy Tour:");
+            if (inputUser === USER_ADMIN) {
+                let inputPass = prompt("🔑 Masukkan PASSWORD Admin:");
+                if (inputPass === PASS_ADMIN) {
+                    sessionStorage.setItem("admin_logged_in", "true");
+                } else {
+                    alert("❌ Password salah! Akses ditolak.");
+                    window.location.href = "../index.html"; 
+                }
+            } else {
+                alert("❌ Username tidak dikenal! Akses ditolak.");
+                window.location.href = "../index.html"; 
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow-x: hidden; }
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #10b981;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div class="flex h-screen overflow-hidden">
+        
+        <aside class="w-64 bg-slate-900 text-slate-300 flex flex-col transition-all">
+            <div class="p-6">
+                <div class="text-2xl font-extrabold tracking-tight text-emerald-500">
+                    Happy<span class="text-white">Admin</span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">v1.0 - Pojok Universe</p>
+            </div>
+            
+            <nav class="flex-1 px-4 space-y-2 mt-4">
+                <button onclick="switchTab('tab-pengaturan')" id="nav-pengaturan" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition bg-emerald-600/10 text-emerald-400 font-medium">
+                    <span>⚙️</span> Pengaturan Web
+                </button>
+                <button onclick="switchTab('tab-katalog')" id="nav-katalog" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition hover:bg-slate-800 hover:text-white">
+                    <span>🏞️</span> Katalog Wisata & Galeri
+                </button>
+                <button onclick="switchTab('tab-paket')" id="nav-paket" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition hover:bg-slate-800 hover:text-white">
+                    <span>🏷️</span> Paket Guide
+                </button>
+            </nav>
+            
+            <div class="p-4 border-t border-slate-800">
+                <a href="index.html" target="_blank" class="w-full block text-center bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm transition">
+                    Lihat Website ➔
+                </a>
+            </div>
+        </aside>
+
+        <main class="flex-1 overflow-y-auto bg-slate-50 p-8 relative">
+            
+            <div id="toast" class="fixed top-6 -right-96 bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg transition-all duration-300 z-50 flex items-center gap-2">
+                <span>✅</span> <span id="toast-msg">Tersimpan!</span>
+            </div>
+
+            <!-- TAB PENGATURAN -->
+            <div id="tab-pengaturan" class="tab-content block">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Pengaturan Teks Website</h1>
+                        <p class="text-sm text-slate-500">Ubah judul, deskripsi, info kontak, dan background hero web utama.</p>
+                    </div>
+                    <button onclick="simpanPengaturan()" id="btn-simpan-pengaturan" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition flex items-center">
+                        Simpan Perubahan
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 space-y-8">
+                    <div id="form-pengaturan" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="col-span-full text-center py-10 text-slate-500">
+                            <div class="loader"></div> Mengambil data...
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB KATALOG -->
+            <div id="tab-katalog" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Katalog Wisata & Galeri</h1>
+                        <p class="text-sm text-slate-500">Kelola spot wisata dan foto/video kenangan pengunjung.</p>
+                    </div>
+                    <button onclick="bukaModalKatalog()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition">
+                        + Tambah Baru
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">Media Utama</th>
+                                <th class="px-6 py-4 font-semibold">Nama / Judul</th>
+                                <th class="px-6 py-4 font-semibold">Tipe</th>
+                                <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-katalog" class="divide-y divide-slate-100">
+                            <tr><td colspan="4" class="text-center py-10 text-slate-500"><div class="loader"></div> Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB PAKET -->
+            <div id="tab-paket" class="tab-content hidden">
+                <div class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 class="text-2xl font-bold text-slate-900">Daftar Paket Guide</h1>
+                        <p class="text-sm text-slate-500">Kelola harga, fasilitas, dan desain kartu paket.</p>
+                    </div>
+                    <button onclick="bukaModalPaket()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition">
+                        + Tambah Paket
+                    </button>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                            <tr>
+                                <th class="px-6 py-4 font-semibold">Nama Paket</th>
+                                <th class="px-6 py-4 font-semibold">Harga</th>
+                                <th class="px-6 py-4 font-semibold">Desain Kartu</th>
+                                <th class="px-6 py-4 font-semibold text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabel-paket" class="divide-y divide-slate-100">
+                            <tr><td colspan="4" class="text-center py-10 text-slate-500"><div class="loader"></div> Memuat data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- MODAL KATALOG -->
+    <div id="modal-katalog" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 sticky top-0 z-10">
+                <h3 id="modal-katalog-title" class="font-bold text-lg text-slate-800">Tambah Katalog Baru</h3>
+                <button onclick="tutupModal('modal-katalog')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+            </div>
+            <div class="p-6 space-y-5">
+                <input type="hidden" id="kat-id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Tipe Konten <span class="text-red-500">*</span></label>
+                    <select id="kat-tipe" onchange="toggleFormWisata()" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none">
+                        <option value="wisata">Spot Wisata (Lengkap dengan Info Trekking)</option>
+                        <option value="galeri">Galeri Kenangan (Hanya Judul & Media)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama / Judul <span class="text-red-500">*</span></label>
+                    <input type="text" id="kat-nama" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none" placeholder="Contoh: Bukit Menangis">
+                </div>
+
+                <div class="border-2 border-dashed border-slate-200 rounded-xl p-6 bg-slate-50 text-center">
+                    <label class="block text-sm font-semibold text-slate-700 mb-3">Upload Foto / Video</label>
+                    <input type="file" id="kat-file-upload" multiple accept="image/*,video/mp4,video/webm" class="hidden" onchange="handleFileUpload(event)">
+                    <button type="button" onclick="document.getElementById('kat-file-upload').click()" class="bg-slate-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-slate-700 transition mb-3">
+                        Pilih File dari Perangkat
+                    </button>
+                    <p class="text-xs text-slate-500 mb-4">Pilih beberapa file sekaligus. Video maks 50MB (MP4/WebM).</p>
+                    <div id="kat-preview-urls" class="text-left space-y-2 text-xs text-slate-600"></div>
+                </div>
+
+                <div id="kat-form-wisata" class="space-y-5 border-t border-slate-100 pt-5">
+                    <h4 class="font-bold text-slate-800 text-sm bg-slate-100 inline-block px-3 py-1 rounded-md">Detail Wisata (Opsional)</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Lokasi</label>
+                            <input type="text" id="kat-lokasi" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Ketinggian (MDPL)</label>
+                            <input type="text" id="kat-ketinggian" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jam Buka</label>
+                            <input type="text" id="kat-jam" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Jarak Tempuh</label>
+                            <input type="text" id="kat-jarak" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Medan Jalan</label>
+                            <input type="text" id="kat-medan" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Waktu Terbaik Datang</label>
+                            <input type="text" id="kat-waktu" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Perlengkapan Wajib</label>
+                            <input type="text" id="kat-alat" class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:border-emerald-500">
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 sticky bottom-0">
+                <button onclick="tutupModal('modal-katalog')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium transition">Batal</button>
+                <button onclick="simpanKatalog()" id="btn-simpan-katalog" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition flex items-center">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PAKET -->
+    <div id="modal-paket" class="fixed inset-0 bg-slate-900/50 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-xl w-full max-w-md shadow-2xl flex flex-col">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 rounded-t-xl">
+                <h3 id="modal-paket-title" class="font-bold text-lg text-slate-800">Tambah Paket</h3>
+                <button onclick="tutupModal('modal-paket')" class="text-slate-400 hover:text-slate-600 font-bold text-xl">✕</button>
+            </div>
+            <div class="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                <input type="hidden" id="pak-id">
+                
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Nama Paket <span class="text-red-500">*</span></label>
+                    <input type="text" id="pak-nama" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Deskripsi Singkat</label>
+                    <textarea id="pak-desc" rows="2" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500"></textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Harga (Angka) <span class="text-red-500">*</span></label>
+                        <input type="number" id="pak-harga" placeholder="150000" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Satuan</label>
+                        <input type="text" id="pak-satuan" placeholder="/ grup" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Teks Pita Promo</label>
+                        <input type="text" id="pak-badge" placeholder="Kosongkan jk tidak ada" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Desain Kartu <span class="text-red-500">*</span></label>
+                        <select id="pak-warna" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none focus:border-emerald-500">
+                            <option value="putih">Standar (Putih)</option>
+                            <option value="hijau">Premium (Hijau)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1">Fasilitas (Pisahkan dgn Koma)</label>
+                    <textarea id="pak-fas" rows="3" placeholder="P3K, Guide Berpengalaman, Dokumentasi" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg outline-none text-sm focus:border-emerald-500"></textarea>
+                </div>
+
+            </div>
+            <div class="p-6 border-t border-slate-100 bg-slate-50 rounded-b-xl flex justify-end gap-3">
+                <button onclick="tutupModal('modal-paket')" class="px-5 py-2 text-slate-600 hover:bg-slate-200 rounded-lg font-medium transition">Batal</button>
+                <button onclick="simpanPaket()" id="btn-simpan-paket" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg font-medium shadow-sm transition flex items-center">
+                    Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT SUPABASE & LOGIC DENGAN FITUR EDIT -->
+    <script>
+        const supabaseUrl = 'https://wgdopbdxjrjypcrenjpb.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndnZG9wYmR4anJqeXBjcmVuanBiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgxMDEzMzYsImV4cCI6MjEwMzY3NzMzNn0.tjogPydKMyvd7JtzC3K95IIsu2FZeg9zk0RZlV5cBy0';
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        const BUCKET_NAME = 'galeri_media';
+
+        let listFotosUpload = []; 
+        let globalDataKatalog = [];
+        let globalDataPaket = [];
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+            
+            document.querySelectorAll('aside button').forEach(el => {
+                el.classList.remove('bg-emerald-600/10', 'text-emerald-400');
+                el.classList.add('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
+            });
+            const activeBtn = document.getElementById('nav-' + tabId.split('-')[1]);
+            activeBtn.classList.remove('hover:bg-slate-800', 'hover:text-white', 'text-slate-300');
+            activeBtn.classList.add('bg-emerald-600/10', 'text-emerald-400');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            toast.classList.remove('-right-96');
+            toast.classList.add('right-6');
+            setTimeout(() => { 
+                toast.classList.remove('right-6');
+                toast.classList.add('-right-96'); 
+            }, 3000);
+        }
+
+        const listFieldPengaturan = ['hero_subtitle', 'hero_title', 'hero_desc', 'wisata_title', 'wisata_subtitle', 'galeri_title', 'galeri_subtitle', 'paket_title', 'paket_disclaimer', 'footer_about', 'kontak_email', 'kontak_wa', 'kontak_alamat'];
+
+        async function muatPengaturan() {
+            const { data, error } = await supabaseClient.from('pengaturan_web').select('*').eq('id', 1).single();
+            const formContainer = document.getElementById('form-pengaturan');
+            formContainer.innerHTML = '';
+
+            if (data) {
+                formContainer.innerHTML += `
+                    <div class="col-span-full bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col md:flex-row items-center gap-6 mb-2">
+                        <img id="preview-hero-bg" src="${data.hero_bg_url || 'https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=1200&q=80'}" class="w-48 h-28 object-cover rounded-lg shadow-sm border border-slate-300">
+                        <div class="flex-1">
+                            <label class="block text-sm font-bold text-slate-800 mb-1">Background Utama (Hero Section)</label>
+                            <p class="text-xs text-slate-500 mb-4">Pilih foto pemandangan terbaik (landscape) untuk menyambut pengunjung website kamu.</p>
+                            <input type="file" id="hero-bg-upload" accept="image/*" class="hidden" onchange="uploadHeroBg(event)">
+                            <button type="button" id="btn-upload-hero" onclick="document.getElementById('hero-bg-upload').click()" class="bg-slate-800 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-slate-700 transition">
+                                Ganti Foto Background
+                            </button>
+                            <input type="hidden" id="set-hero_bg_url" value="${data.hero_bg_url || ''}">
+                        </div>
+                    </div>
+                `;
+
+                listFieldPengaturan.forEach(field => {
+                    const formatNama = field.replace('_', ' ').toUpperCase();
+                    formContainer.innerHTML += `
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1 tracking-wider">${formatNama}</label>
+                            <textarea id="set-${field}" rows="${field.includes('desc') || field.includes('about') ? '3' : '1'}" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm">${data[field] || ''}</textarea>
+                        </div>
+                    `;
+                });
+            } else {
+                await supabaseClient.from('pengaturan_web').insert([{id: 1}]);
+                muatPengaturan();
+            }
+        }
+
+        async function uploadHeroBg(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const btn = document.getElementById('btn-upload-hero');
+            const oldText = btn.innerText;
+            btn.innerHTML = '<div class="loader"></div> Mengunggah...';
+            btn.disabled = true;
+
+            const fileExt = file.name.split('.').pop();
+            const fileName = `bg-hero-${Date.now()}.${fileExt}`;
+
+            const { data, error } = await supabaseClient.storage.from(BUCKET_NAME).upload(fileName, file);
+            if (error) {
+                alert('Gagal upload background: ' + error.message);
+            } else {
+                const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+                document.getElementById('set-hero_bg_url').value = publicUrlData.publicUrl;
+                document.getElementById('preview-hero-bg').src = publicUrlData.publicUrl;
+                showToast("Foto masuk! Jangan lupa klik Simpan Perubahan.");
+            }
+            btn.innerText = oldText;
+            btn.disabled = false;
+        }
+
+        async function simpanPengaturan() {
+            const btn = document.getElementById('btn-simpan-pengaturan');
+            btn.innerHTML = '<div class="loader"></div> Menyimpan...';
+            btn.disabled = true;
+
+            const payload = {};
+            listFieldPengaturan.forEach(field => {
+                payload[field] = document.getElementById('set-'+field).value;
+            });
+            payload['hero_bg_url'] = document.getElementById('set-hero_bg_url').value;
+
+            const { error } = await supabaseClient.from('pengaturan_web').update(payload).eq('id', 1);
+            
+            btn.innerHTML = 'Simpan Perubahan';
+            btn.disabled = false;
+            
+            if(!error) showToast("Pengaturan berhasil disimpan!");
+            else alert("Gagal menyimpan: " + error.message);
+        }
+
+        async function muatKatalog() {
+            const tbody = document.getElementById('tabel-katalog');
+            const { data, error } = await supabaseClient.from('katalog_konten').select('*').order('created_at', { ascending: false });
+            tbody.innerHTML = '';
+
+            if(data && data.length > 0) {
+                globalDataKatalog = data; // Simpan ke global buat fitur Edit
+                data.forEach(item => {
+                    let thumb = '<div class="w-16 h-12 bg-slate-200 rounded-md flex items-center justify-center text-xs text-slate-400">No Media</div>';
+                    if (item.fotos && item.fotos.length > 0) {
+                        const isVid = item.fotos[0].match(/\.(mp4|webm|ogg)$/i);
+                        thumb = isVid 
+                            ? `<video src="${item.fotos[0]}" class="w-16 h-12 object-cover rounded-md" muted></video>`
+                            : `<img src="${item.fotos[0]}" class="w-16 h-12 object-cover rounded-md">`;
+                    }
+                    const badgeTipe = item.tipe === 'wisata' 
+                        ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">WISATA</span>`
+                        : `<span class="bg-purple-100 text-purple-700 px-2 py-1 rounded text-xs font-bold">GALERI</span>`;
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-3">${thumb}</td>
+                            <td class="px-6 py-3 font-semibold text-slate-800">${item.nama}</td>
+                            <td class="px-6 py-3">${badgeTipe}</td>
+                            <td class="px-6 py-3 text-right">
+                                <button onclick="editKatalog('${item.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-medium mr-4">Edit</button>
+                                <button onclick="hapusKatalog('${item.id}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-500">Belum ada data.</td></tr>';
+            }
+        }
+
+        function bukaModalKatalog() {
+            document.getElementById('modal-katalog-title').innerText = "Tambah Katalog Baru";
+            document.getElementById('modal-katalog').classList.remove('hidden');
+            document.getElementById('kat-id').value = '';
+            document.getElementById('kat-nama').value = '';
+            document.getElementById('kat-tipe').value = 'wisata';
+            listFotosUpload = [];
+            document.getElementById('kat-preview-urls').innerHTML = '';
+            document.getElementById('kat-file-upload').value = '';
+            
+            const inputs = ['lokasi','ketinggian','jam','jarak','medan','waktu','alat'];
+            inputs.forEach(id => document.getElementById('kat-'+id).value = '');
+            toggleFormWisata();
+        }
+
+        function editKatalog(id) {
+            const item = globalDataKatalog.find(x => x.id == id);
+            if(!item) return;
+
+            document.getElementById('modal-katalog-title').innerText = "Edit Katalog";
+            document.getElementById('kat-id').value = item.id;
+            document.getElementById('kat-tipe').value = item.tipe || 'wisata';
+            document.getElementById('kat-nama').value = item.nama || '';
+            
+            listFotosUpload = item.fotos || [];
+            const previewBox = document.getElementById('kat-preview-urls');
+            previewBox.innerHTML = '';
+            listFotosUpload.forEach((url, idx) => {
+                previewBox.innerHTML += `<div class="truncate p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">✅ Media ${idx+1} Tersimpan</div>`;
+            });
+
+            document.getElementById('kat-lokasi').value = item.info_lokasi || '';
+            document.getElementById('kat-ketinggian').value = item.info_ketinggian || '';
+            document.getElementById('kat-jam').value = item.info_jam_buka || '';
+            document.getElementById('kat-jarak').value = item.jalur_jarak || '';
+            document.getElementById('kat-medan').value = item.jalur_medan || '';
+            document.getElementById('kat-waktu').value = item.tips_waktu || '';
+            document.getElementById('kat-alat').value = item.tips_perlengkapan || '';
+
+            toggleFormWisata();
+            document.getElementById('modal-katalog').classList.remove('hidden');
+        }
+
+        function toggleFormWisata() {
+            const tipe = document.getElementById('kat-tipe').value;
+            const formWisata = document.getElementById('kat-form-wisata');
+            if(tipe === 'wisata') formWisata.classList.remove('hidden');
+            else formWisata.classList.add('hidden');
+        }
+
+        async function handleFileUpload(event) {
+            const files = event.target.files;
+            if(files.length === 0) return;
+            
+            const previewBox = document.getElementById('kat-preview-urls');
+            previewBox.innerHTML = '<div class="loader"></div> Mengunggah ke server...';
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const fileExt = file.name.split('.').pop();
+                const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+
+                const { data, error } = await supabaseClient.storage.from(BUCKET_NAME).upload(fileName, file);
+                
+                if (error) {
+                    alert('Gagal upload: ' + error.message);
+                } else {
+                    const { data: publicUrlData } = supabaseClient.storage.from(BUCKET_NAME).getPublicUrl(fileName);
+                    listFotosUpload.push(publicUrlData.publicUrl);
+                }
+            }
+            
+            previewBox.innerHTML = '';
+            listFotosUpload.forEach((url, idx) => {
+                previewBox.innerHTML += `<div class="truncate p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">✅ Media ${idx+1} Siap Disimpan</div>`;
+            });
+        }
+
+        async function simpanKatalog() {
+            const nama = document.getElementById('kat-nama').value;
+            if(!nama) return alert('Nama wajib diisi!');
+            
+            const btn = document.getElementById('btn-simpan-katalog');
+            btn.innerHTML = '<div class="loader"></div> Menyimpan...';
+            btn.disabled = true;
+
+            const katId = document.getElementById('kat-id').value;
+            const payload = {
+                nama: nama,
+                tipe: document.getElementById('kat-tipe').value,
+                fotos: listFotosUpload,
+                info_lokasi: document.getElementById('kat-lokasi').value,
+                info_ketinggian: document.getElementById('kat-ketinggian').value,
+                info_jam_buka: document.getElementById('kat-jam').value,
+                jalur_jarak: document.getElementById('kat-jarak').value,
+                jalur_medan: document.getElementById('kat-medan').value,
+                tips_waktu: document.getElementById('kat-waktu').value,
+                tips_perlengkapan: document.getElementById('kat-alat').value
+            };
+
+            let error = null;
+            if (katId) {
+                // Proses Edit/Update Data
+                const { error: updateErr } = await supabaseClient.from('katalog_konten').update(payload).eq('id', katId);
+                error = updateErr;
+            } else {
+                // Proses Tambah Data Baru
+                const { error: insertErr } = await supabaseClient.from('katalog_konten').insert([payload]);
+                error = insertErr;
+            }
+            
+            btn.innerHTML = 'Simpan';
+            btn.disabled = false;
+
+            if(!error) {
+                showToast("Data berhasil disimpan!");
+                tutupModal('modal-katalog');
+                muatKatalog();
+            } else alert("Error: " + error.message);
+        }
+
+        async function hapusKatalog(id) {
+            if(confirm("Yakin ingin menghapus data ini?")) {
+                await supabaseClient.from('katalog_konten').delete().eq('id', id);
+                showToast("Data dihapus!");
+                muatKatalog();
+            }
+        }
+
+        async function muatPaket() {
+            const tbody = document.getElementById('tabel-paket');
+            const { data, error } = await supabaseClient.from('paket_guide').select('*').order('harga', { ascending: true });
+            tbody.innerHTML = '';
+
+            if(data && data.length > 0) {
+                globalDataPaket = data; // Simpan ke global buat fitur Edit
+                data.forEach(item => {
+                    const badgeWarna = item.warna_kartu === 'hijau' 
+                        ? `<span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">Premium (Hijau)</span>`
+                        : `<span class="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-bold">Standar (Putih)</span>`;
+
+                    const formatHarga = new Intl.NumberFormat('id-ID').format(item.harga);
+
+                    tbody.innerHTML += `
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-6 py-4 font-semibold text-slate-800">${item.nama_paket}</td>
+                            <td class="px-6 py-4">Rp ${formatHarga}</td>
+                            <td class="px-6 py-4">${badgeWarna}</td>
+                            <td class="px-6 py-4 text-right">
+                                <button onclick="editPaket('${item.id}')" class="text-blue-500 hover:text-blue-700 text-sm font-medium mr-4">Edit</button>
+                                <button onclick="hapusPaket('${item.id}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Hapus</button>
+                            </td>
+                        </tr>
+                    `;
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center py-6 text-slate-500">Belum ada paket.</td></tr>';
+            }
+        }
+
+        function bukaModalPaket() {
+            document.getElementById('modal-paket-title').innerText = "Tambah Paket";
+            document.getElementById('modal-paket').classList.remove('hidden');
+            document.getElementById('pak-id').value = '';
+            document.getElementById('pak-nama').value = '';
+            document.getElementById('pak-desc').value = '';
+            document.getElementById('pak-harga').value = '';
+            document.getElementById('pak-satuan').value = '/ grup';
+            document.getElementById('pak-badge').value = '';
+            document.getElementById('pak-warna').value = 'putih';
+            document.getElementById('pak-fas').value = '';
+        }
+
+        function editPaket(id) {
+            const item = globalDataPaket.find(x => x.id == id);
+            if(!item) return;
+
+            document.getElementById('modal-paket-title').innerText = "Edit Paket";
+            document.getElementById('pak-id').value = item.id;
+            document.getElementById('pak-nama').value = item.nama_paket || '';
+            document.getElementById('pak-desc').value = item.deskripsi || '';
+            document.getElementById('pak-harga').value = item.harga || '';
+            document.getElementById('pak-satuan').value = item.satuan_harga || '';
+            document.getElementById('pak-badge').value = item.badge_promo || '';
+            document.getElementById('pak-warna').value = item.warna_kartu || 'putih';
+            document.getElementById('pak-fas').value = (item.fasilitas || []).join(', ');
+
+            document.getElementById('modal-paket').classList.remove('hidden');
+        }
+
+        async function simpanPaket() {
+            const nama = document.getElementById('pak-nama').value;
+            const harga = document.getElementById('pak-harga').value;
+            if(!nama || !harga) return alert('Nama dan Harga wajib diisi!');
+            
+            const btn = document.getElementById('btn-simpan-paket');
+            btn.innerHTML = '<div class="loader"></div> Menyimpan...';
+            btn.disabled = true;
+
+            const textFas = document.getElementById('pak-fas').value;
+            const arrFas = textFas.split(',').map(item => item.trim()).filter(item => item !== "");
+            
+            const pakId = document.getElementById('pak-id').value;
+            const payload = {
+                nama_paket: nama,
+                deskripsi: document.getElementById('pak-desc').value,
+                harga: parseInt(harga),
+                satuan_harga: document.getElementById('pak-satuan').value,
+                badge_promo: document.getElementById('pak-badge').value,
+                warna_kartu: document.getElementById('pak-warna').value,
+                fasilitas: arrFas
+            };
+
+            let error = null;
+            if (pakId) {
+                // Proses Edit/Update Data
+                const { error: updateErr } = await supabaseClient.from('paket_guide').update(payload).eq('id', pakId);
+                error = updateErr;
+            } else {
+                // Proses Tambah Data Baru
+                const { error: insertErr } = await supabaseClient.from('paket_guide').insert([payload]);
+                error = insertErr;
+            }
+            
+            btn.innerHTML = 'Simpan';
+            btn.disabled = false;
+
+            if(!error) {
+                showToast("Paket berhasil disimpan!");
+                tutupModal('modal-paket');
+                muatPaket();
+            } else alert("Error: " + error.message);
+        }
+
+        async function hapusPaket(id) {
+            if(confirm("Yakin ingin menghapus paket ini?")) {
+                await supabaseClient.from('paket_guide').delete().eq('id', id);
+                showToast("Paket dihapus!");
+                muatPaket();
+            }
+        }
+
+        function tutupModal(id) {
+            document.getElementById(id).classList.add('hidden');
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            muatPengaturan();
+            muatKatalog();
+            muatPaket();
+        });
+    </script>
+</body>
+</html>
