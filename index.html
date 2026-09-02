@@ -19,7 +19,6 @@
             border-color: #10b981; 
             opacity: 1;
         }
-        /* Menyembunyikan scrollbar bawaan browser biar estetik saat digeser di HP */
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -31,7 +30,10 @@
             <div class="text-2xl font-extrabold tracking-tight text-emerald-600">
                 Happy<span class="text-slate-800">Tour</span>
             </div>
-            <a href="#paket" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-full font-semibold transition shadow-md">Booking Guide</a>
+            <div class="flex items-center gap-3">
+                <a href="admin.html" class="bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-full font-semibold text-sm transition shadow-md">Admin</a>
+                <a href="#paket" class="bg-emerald-500 hover:bg-emerald-600 text-white px-5 py-2 rounded-full font-semibold text-sm transition shadow-md">Booking Guide</a>
+            </div>
         </div>
     </nav>
 
@@ -87,6 +89,7 @@
                     <li><a href="#wisata" class="hover:text-emerald-400 transition">Spot Favorit</a></li>
                     <li><a href="#galeri" class="hover:text-emerald-400 transition">Galeri Kenangan</a></li>
                     <li><a href="#paket" class="hover:text-emerald-400 transition">Harga Jasa Guide</a></li>
+                    <li><a href="admin.html" class="hover:text-emerald-400 transition">Halaman Admin</a></li>
                 </ul>
             </div>
             
