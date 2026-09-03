@@ -196,7 +196,7 @@
                         Pilih File dari Perangkat
                     </button>
                     <p class="text-xs text-slate-500 mb-4">Pilih beberapa file sekaligus. Video maks 50MB (MP4/WebM).</p>
-                    <div id="kat-preview-urls" class="text-left space-y-2 text-xs text-slate-600"></div>
+                    <div id="kat-preview-urls" class="text-left space-y-2 text-xs text-slate-600 mt-2"></div>
                 </div>
 
                 <div id="kat-form-wisata" class="space-y-5 border-t border-slate-100 pt-5">
@@ -480,11 +480,9 @@
             document.getElementById('kat-nama').value = item.nama || '';
             
             listFotosUpload = item.fotos || [];
-            const previewBox = document.getElementById('kat-preview-urls');
-            previewBox.innerHTML = '';
-            listFotosUpload.forEach((url, idx) => {
-                previewBox.innerHTML += `<div class="truncate p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">✅ Media ${idx+1} Tersimpan</div>`;
-            });
+            
+            // Panggil fungsi render baru untuk menampilkan daftar media dengan ikon hapus
+            renderPreviewMedia();
 
             document.getElementById('kat-lokasi').value = item.info_lokasi || '';
             document.getElementById('kat-ketinggian').value = item.info_ketinggian || '';
@@ -527,10 +525,35 @@
                 }
             }
             
+            // Panggil fungsi render untuk memperbarui tampilan UI setelah upload selesai
+            renderPreviewMedia();
+        }
+
+        // FUNGSI BARU UNTUK MERENDER & MENGHAPUS MEDIA DI UI
+        function renderPreviewMedia() {
+            const previewBox = document.getElementById('kat-preview-urls');
             previewBox.innerHTML = '';
+            
             listFotosUpload.forEach((url, idx) => {
-                previewBox.innerHTML += `<div class="truncate p-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">✅ Media ${idx+1} Siap Disimpan</div>`;
+                previewBox.innerHTML += `
+                    <div class="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-lg transition-all mb-2">
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="text-emerald-500 font-bold">✓</span>
+                            <span class="text-sm font-medium text-emerald-700">Media ${idx + 1} Tersimpan</span>
+                        </div>
+                        <button type="button" onclick="hapusMedia(${idx})" class="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-100 rounded-md transition-colors" title="Hapus foto ini">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                `;
             });
+        }
+
+        function hapusMedia(index) {
+            // Hapus 1 URL dari array berdasarkan index yang diklik
+            listFotosUpload.splice(index, 1);
+            // Render ulang kotak hijaunya
+            renderPreviewMedia();
         }
 
         async function simpanKatalog() {
